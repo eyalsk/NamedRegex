@@ -16,6 +16,8 @@
             _pattern = pattern;
         }
 
+        public NamedRegexLexer(string pattern) : this(pattern.AsMemory()) { }
+
         public NamedRegexToken Lex()
         {
             var startIndex = _currentIndex;
