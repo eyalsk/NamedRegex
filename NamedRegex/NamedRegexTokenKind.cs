@@ -10,6 +10,7 @@
         NamedPattern,
         RegexPattern,
         EndOfPattern,
+        EmptyPattern,
 
         Error
     }

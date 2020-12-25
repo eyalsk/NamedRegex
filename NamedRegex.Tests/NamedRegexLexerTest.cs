@@ -8,6 +8,16 @@ namespace NamedRegex.Tests
 
     public class NamedRegexLexerTest
     {
+        [Fact]
+        public void Should_lex_when_pattern_is_empty()
+        {
+            NamedRegexLexer lexer = new NamedRegexLexer("");
+
+            NamedRegexToken token = lexer.Lex();
+
+            token.Kind.ShouldBe(NamedRegexTokenKind.EmptyPattern);
+        }
+
         [Theory]
         [InlineData("x")]
         [InlineData(@"\{x\}")]

@@ -22,6 +22,11 @@
         {
             var startIndex = _currentIndex;
 
+            if (_pattern.IsEmpty)
+            {
+                return CreateToken(NamedRegexTokenKind.EmptyPattern);
+            }
+
             while (true)
             {
                 var ch = _currentIndex < _pattern.Length ? _pattern.Span[_currentIndex] : EndOfString;
