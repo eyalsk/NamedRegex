@@ -7,7 +7,7 @@
     {
         private static void Main()
         {
-            const string pattern = "as{d}d{vv}v";
+            const string pattern = "ab{c}d{ef}g}h";
 
             var lexer = new NamedRegexLexer(pattern.AsMemory());
 

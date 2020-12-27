@@ -5,6 +5,7 @@
     public sealed class NamedRegexLexer
     {
         private const char EndOfString = '\0';
+        private const char EscapeChar = '\\';
 
         private readonly ReadOnlyMemory<char> _pattern;
 
@@ -30,6 +31,7 @@
             while (true)
             {
                 var ch = _currentIndex < _pattern.Length ? _pattern.Span[_currentIndex] : EndOfString;
+                var prevChar = _currentIndex > 0 ? _pattern.Span[_currentIndex - 1] : ch;
 
                 _currentIndex++;
 
@@ -37,28 +39,39 @@
                 {
                     case '{':
                     {
-                        _prevTokenKind = NamedRegexTokenKind.OpenedCurlyBrace;
-
-                        if (_currentIndex > 0)
+                        if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace)
                         {
-                            return CreateTokenWithRange(NamedRegexTokenKind.RegexPattern, startIndex..(_currentIndex - 1));
+                            return CreateToken(NamedRegexTokenKind.InvalidCurlyBrace);
+                        }
+                        else
+                        {
+                            _prevTokenKind = prevChar is EscapeChar
+                                ? NamedRegexTokenKind.RegexCharacter
+                                : NamedRegexTokenKind.OpenedCurlyBrace;
                         }
 
-                        break;
+                        return CreateToken(_prevTokenKind);
                     }
                     case '}':
                     {
-                        var range = startIndex..(_currentIndex - 1);
-                        var prevTokenKind = _prevTokenKind;
-
-                        _prevTokenKind = NamedRegexTokenKind.ClosedCurlyBrace;
-
-                        if (prevTokenKind == NamedRegexTokenKind.OpenedCurlyBrace)
+                        if (prevChar is EscapeChar)
                         {
-                            return CreateTokenWithRange(NamedRegexTokenKind.NamedPattern, range);
+                            _prevTokenKind = _prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace
+                                ? NamedRegexTokenKind.InvalidCurlyBrace
+                                : NamedRegexTokenKind.RegexCharacter;
+                        }
+                        else
+                        {
+                            _prevTokenKind = _prevTokenKind is NamedRegexTokenKind.ClosedCurlyBrace
+                                ? NamedRegexTokenKind.InvalidCurlyBrace
+                                : NamedRegexTokenKind.ClosedCurlyBrace;
                         }
 
-                        return CreateTokenWithRange(NamedRegexTokenKind.Error, range);
+                        return CreateToken(_prevTokenKind);
+                    }
+                    case EscapeChar:
+                    {
+                        break;
                     }
                     case EndOfString:
                     {
@@ -66,33 +79,29 @@
                     }
                     default:
                     {
-                        if (_prevTokenKind == NamedRegexTokenKind.OpenedCurlyBrace && !char.IsLetterOrDigit(ch))
+                        if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace)
                         {
-                            _prevTokenKind = NamedRegexTokenKind.Error;
+                            return char.IsLetterOrDigit(ch)
+                                ? CreateToken(NamedRegexTokenKind.IdentifierCharacter)
+                                : CreateToken(NamedRegexTokenKind.InvalidIdentifierCharacter);
                         }
-                        else if (_currentIndex >= _pattern.Length)
+                        else
                         {
-                            if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace or NamedRegexTokenKind.Error)
-                            {
-                                return CreateToken(NamedRegexTokenKind.Error);
-                            }
-
-                            return CreateToken(NamedRegexTokenKind.RegexPattern);
+                            return CreateToken(NamedRegexTokenKind.RegexCharacter);
                         }
-
-                        break;
                     }
                 }
             }
 
-            NamedRegexToken CreateTokenWithRange(NamedRegexTokenKind tokenKind, Range range)
+            NamedRegexToken CreateToken(NamedRegexTokenKind tokenKind)
             {
-                var value = tokenKind != NamedRegexTokenKind.EndOfPattern ? _pattern[range] : ReadOnlyMemory<char>.Empty;
+                var range = startIndex.._currentIndex;
+                var value = tokenKind is not NamedRegexTokenKind.EndOfPattern
+                                ? _pattern[range]
+                                : ReadOnlyMemory<char>.Empty;
 
                 return new NamedRegexToken(range, tokenKind, value);
             }
-
-            NamedRegexToken CreateToken(NamedRegexTokenKind tokenKind) => CreateTokenWithRange(tokenKind, startIndex.._currentIndex);
         }
     }
 }

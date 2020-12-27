@@ -19,71 +19,119 @@ namespace NamedRegex.Tests
         }
 
         [Theory]
-        [InlineData("x")]
-        [InlineData(@"\{x\}")]
-        [InlineData(@"\{x-")]
-        //[InlineData(@"-x\}")]
-        public void Should_lex_when_pattern_has_RegexPattern(string pattern)
+        [InlineData("x",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"\{x-",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"-x\}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"\{x\}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        public void Should_lex_regex_patterns(string pattern, NamedRegexTokenKind[] kinds)
         {
             var lexer = new NamedRegexLexer(pattern);
-            var results = new List<NamedRegexToken>();
+            var results = new List<NamedRegexTokenKind>();
 
             while (true)
             {
                 var token = lexer.Lex();
 
-                results.Add(token);
+                results.Add(token.Kind);
 
                 if (token.Kind == NamedRegexTokenKind.EndOfPattern) break;
             }
 
-            results.ShouldContain(t => t.Kind == NamedRegexTokenKind.RegexPattern);
+            results.ShouldBe(kinds);
         }
 
         [Theory]
-        [InlineData("{x}")]
-        [InlineData("x{x}")]
-        [InlineData("{x}x")]
-        [InlineData("x{x}x")]
-        public void Should_lex_when_pattern_has_NamedPattern(string pattern)
+        [InlineData("{x}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("x{x}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("{x}x",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("x{x}x",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.EndOfPattern })]
+        public void Should_lex_named_regex_patterns(string pattern, NamedRegexTokenKind[] kinds)
         {
             var lexer = new NamedRegexLexer(pattern);
-            var results = new List<NamedRegexToken>();
+            var results = new List<NamedRegexTokenKind>();
 
             while (true)
             {
                 var token = lexer.Lex();
 
-                results.Add(token);
+                results.Add(token.Kind);
 
                 if (token.Kind == NamedRegexTokenKind.EndOfPattern) break;
             }
 
-            results.ShouldContain(t => t.Kind == NamedRegexTokenKind.NamedPattern);
+            results.ShouldBe(kinds);
         }
 
-        [Theory]
+        /*[Theory]
         //[InlineData("x{")]
-        [InlineData("x}")]
+        [InlineData("x}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
         //[InlineData(@"\{x}")]
-        [InlineData(@"{x\}")]
+        [InlineData(@"{x\}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
         //[InlineData("{x{x}")]
         //[InlineData(@"{x\{x}")]
-        public void Should_lex_when_pattern_has_Error(string pattern)
+        public void Should_lex_when_pattern_has_Error(string pattern, NamedRegexTokenKind[] kinds)
         {
             var lexer = new NamedRegexLexer(pattern);
-            var results = new List<NamedRegexToken>();
+            var results = new List<NamedRegexTokenKind>();
 
             while (true)
             {
                 var token = lexer.Lex();
 
-                results.Add(token);
+                results.Add(token.Kind);
 
                 if (token.Kind == NamedRegexTokenKind.EndOfPattern) break;
             }
 
-            results.ShouldContain(t => t.Kind == NamedRegexTokenKind.Error);
-        }
+            results.ShouldBe(kinds);
+        }*/
     }
 }

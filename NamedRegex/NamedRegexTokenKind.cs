@@ -4,14 +4,16 @@
     {
         None,
 
+        EmptyPattern,
+        EndOfPattern,
+
         OpenedCurlyBrace,
         ClosedCurlyBrace,
 
-        NamedPattern,
-        RegexPattern,
-        EndOfPattern,
-        EmptyPattern,
+        RegexCharacter,
+        IdentifierCharacter,
 
-        Error
+        InvalidCurlyBrace,
+        InvalidIdentifierCharacter
     }
 }
