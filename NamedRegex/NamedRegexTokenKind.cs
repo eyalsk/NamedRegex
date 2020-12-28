@@ -13,7 +13,6 @@
         RegexCharacter,
         IdentifierCharacter,
 
-        InvalidCurlyBrace,
-        InvalidIdentifierCharacter
+        Error
     }
 }

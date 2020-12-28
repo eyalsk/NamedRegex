@@ -39,9 +39,11 @@
                 {
                     case '{':
                     {
-                        if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace)
+                        if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace
+                            or NamedRegexTokenKind.IdentifierCharacter
+                            || _currentIndex >= _pattern.Length)
                         {
-                            return CreateToken(NamedRegexTokenKind.InvalidCurlyBrace);
+                            return CreateToken(NamedRegexTokenKind.Error);
                         }
                         else
                         {
@@ -56,15 +58,27 @@
                     {
                         if (prevChar is EscapeChar)
                         {
-                            _prevTokenKind = _prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace
-                                ? NamedRegexTokenKind.InvalidCurlyBrace
-                                : NamedRegexTokenKind.RegexCharacter;
+                            if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace
+                                or NamedRegexTokenKind.IdentifierCharacter
+                                or NamedRegexTokenKind.ClosedCurlyBrace)
+                            {
+                                return CreateToken(NamedRegexTokenKind.Error);
+                            }
+                            else
+                            {
+                                _prevTokenKind = NamedRegexTokenKind.RegexCharacter;
+                            }
                         }
                         else
                         {
-                            _prevTokenKind = _prevTokenKind is NamedRegexTokenKind.ClosedCurlyBrace
-                                ? NamedRegexTokenKind.InvalidCurlyBrace
-                                : NamedRegexTokenKind.ClosedCurlyBrace;
+                            if (_prevTokenKind is not NamedRegexTokenKind.IdentifierCharacter)
+                            {
+                                return CreateToken(NamedRegexTokenKind.Error);
+                            }
+                            else
+                            {
+                                _prevTokenKind = NamedRegexTokenKind.ClosedCurlyBrace;
+                            }
                         }
 
                         return CreateToken(_prevTokenKind);
@@ -81,9 +95,18 @@
                     {
                         if (_prevTokenKind is NamedRegexTokenKind.OpenedCurlyBrace)
                         {
-                            return char.IsLetterOrDigit(ch)
-                                ? CreateToken(NamedRegexTokenKind.IdentifierCharacter)
-                                : CreateToken(NamedRegexTokenKind.InvalidIdentifierCharacter);
+                            if (_currentIndex >= _pattern.Length)
+                            {
+                                _prevTokenKind = NamedRegexTokenKind.Error;
+                            }
+                            else
+                            {
+                                _prevTokenKind = char.IsLetterOrDigit(ch)
+                                    ? NamedRegexTokenKind.IdentifierCharacter
+                                    : NamedRegexTokenKind.Error;
+                            }
+
+                            return CreateToken(_prevTokenKind);
                         }
                         else
                         {

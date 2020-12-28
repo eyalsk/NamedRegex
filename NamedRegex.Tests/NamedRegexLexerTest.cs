@@ -104,20 +104,99 @@ namespace NamedRegex.Tests
             results.ShouldBe(kinds);
         }
 
-        /*[Theory]
-        //[InlineData("x{")]
+        [Theory]
+        [InlineData("{",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("x{",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
         [InlineData("x}",
             new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
                 NamedRegexTokenKind.Error,
                 NamedRegexTokenKind.EndOfPattern })]
-        //[InlineData(@"\{x}")]
-        [InlineData(@"{x\}",
+        [InlineData("{x",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("}x",
             new NamedRegexTokenKind[] {
                 NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.RegexCharacter,
                 NamedRegexTokenKind.EndOfPattern })]
-        //[InlineData("{x{x}")]
-        //[InlineData(@"{x\{x}")]
-        public void Should_lex_when_pattern_has_Error(string pattern, NamedRegexTokenKind[] kinds)
+        [InlineData("{{x}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData("{x}}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"\{x}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.RegexCharacter,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{x\}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{x\}}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{x\{}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.IdentifierCharacter,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.ClosedCurlyBrace,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{\{}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{\}}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{-}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        [InlineData(@"{}",
+            new NamedRegexTokenKind[] {
+                NamedRegexTokenKind.OpenedCurlyBrace,
+                NamedRegexTokenKind.Error,
+                NamedRegexTokenKind.EndOfPattern })]
+        public void Should_lex_improper_named_regex_patterns(string pattern, NamedRegexTokenKind[] kinds)
         {
             var lexer = new NamedRegexLexer(pattern);
             var results = new List<NamedRegexTokenKind>();
@@ -132,6 +211,6 @@ namespace NamedRegex.Tests
             }
 
             results.ShouldBe(kinds);
-        }*/
+        }
     }
 }
